@@ -58,7 +58,6 @@ export const canUpdateUserRole = (req: Request, res: Response, next: NextFunctio
 }
 
 export const canUpdateUserPassword = (req: Request, res: Response, next: NextFunction) => {
-    const {self} = res.locals;
     const {password} = req.body;
 
     if (!password) return next();
