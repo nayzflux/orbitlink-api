@@ -65,3 +65,19 @@ export const canUpdateUserPassword = (req: Request, res: Response, next: NextFun
     return res.status(403).json({message: "You're not allowed to update user password"});
 }
 
+/**
+ * LINK PERMISSIONS
+ */
+
+export const canReadLink = (req: Request, res: Response, next: NextFunction) => {
+    const {self, link} = res.locals;
+
+    // Si c'est son lien
+    if (self._id.toString() === link.userId.toString()) return next();
+
+    // Si l'utilisateur est admin
+    if (self.roles.includes('ADMIN' || 'MODERATOR')) return next();
+
+    // Sinon
+    return res.status(403).json({message: "You're not allowed to read this link"});
+}

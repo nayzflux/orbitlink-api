@@ -6,7 +6,7 @@ export const resolveLink = async (req: Request, res: Response, next: NextFunctio
     const {query} = req.params;
 
     if (mongoose.isValidObjectId(query)) {
-        const link = await LinkModel.findOne({$or: [{_id: query }, {customPath: query}]});
+        const link = await LinkModel.findOne({_id: query });
 
         if (!link) return res.status(404).json({message: "This link doesn't exists"});
 
@@ -14,7 +14,7 @@ export const resolveLink = async (req: Request, res: Response, next: NextFunctio
 
         return next();
     } else {
-        const link = await LinkModel.findOne({customPath: "git"});
+        const link = await LinkModel.findOne({shortURL: query});
 
         if (!link) return res.status(404).json({message: "This link doesn't exists"});
 

@@ -6,13 +6,34 @@ import {validateSafeInput} from "../utils/utils";
  */
 
 export const createLinkSchema = z.object({
-    // Short URL
-    customPath: z.string().min(3).max(10).optional().refine(validateSafeInput),
-    // Long URL
-    longUrl: z.string().url('longUrl must be a valid url').refine(validateSafeInput)
+    shortURL: z.string().nonempty().min(2).max(10).refine(validateSafeInput),
+    destinationURL: z.string().nonempty().url('destinationURL must be a valid url').refine(validateSafeInput),
+    password: z.string().optional().refine(validateSafeInput),
+    expirationDate: z.string().optional().refine(validateSafeInput),
+    releaseDate: z.string().optional().refine(validateSafeInput),
+    passwordProtectionEnabled: z.boolean().optional(),
+    expirationDateEnabled: z.boolean().optional(),
+    releaseDateEnabled: z.boolean().optional(),
 });
 
 export type CreateLinkData = z.infer<typeof createLinkSchema>;
+
+/**
+ * Schema for Updating Link
+ */
+
+export const updateLinkSchema = z.object({
+    shortURL: z.string().nonempty().min(2).max(10).optional().refine(validateSafeInput),
+    destinationURL: z.string().nonempty().url('destinationURL must be a valid url').optional().refine(validateSafeInput),
+    password: z.string().optional().refine(validateSafeInput),
+    expirationDate: z.string().optional().refine(validateSafeInput),
+    releaseDate: z.string().optional().refine(validateSafeInput),
+    passwordProtectionEnabled: z.boolean().optional(),
+    expirationDateEnabled: z.boolean().optional(),
+    releaseDateEnabled: z.boolean().optional(),
+});
+
+export type UpdateLinkData = z.infer<typeof updateLinkSchema>;
 
 /**
  * Schema for Find Link

@@ -6,14 +6,44 @@ const linkSchema = new mongoose.Schema({
         type: mongoose.Types.ObjectId,
         ref: 'User'
     },
-    customPath: {
+    shortURL: {
         required: false,
         default: null,
         type: String
     },
-    longUrl: {
+    destinationURL: {
         required: true,
         type: String
+    },
+    password: {
+        required: false,
+        type: String,
+        default: ''
+    },
+    expirationDate: {
+        required: false,
+        type: Date,
+        default: ''
+    },
+    releaseDate: {
+        required: false,
+        type: Date,
+        default: ''
+    },
+    passwordProtectionEnabled: {
+        required: false,
+        type: Boolean,
+        default: false
+    },
+    expirationDateEnabled: {
+        required: false,
+        type: Boolean,
+        default: false
+    },
+    releaseDateEnabled: {
+        required: false,
+        type: Boolean,
+        default: false
     },
     // Statistics
     statistics: {
@@ -28,7 +58,8 @@ const linkSchema = new mongoose.Schema({
                 os: String,
                 device: String,
                 browser: String,
-                referrer: String
+                referrer: String,
+                createdAt: Date,
             }
         ]
     }

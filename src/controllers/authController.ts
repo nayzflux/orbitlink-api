@@ -3,7 +3,6 @@ import {SignInUserData, User} from "../schemas/userSchema";
 import UserModel from "../models/userModel";
 import {signToken} from "../utils/jwt";
 
-
 export const signUp = async (req: Request, res: Response) => {
     const { username, email, password }: User = req.body;
 
@@ -17,7 +16,7 @@ export const signUp = async (req: Request, res: Response) => {
 
         console.log('User created', newUser.email);
 
-        res.cookie('jwt', token);
+        res.cookie('jwt', token, {secure: true, expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000, sameSite: "strict", path: "/api"});
         return res.status(201).json({_id: newUser._id, username: newUser.username, email: newUser.email, roles: newUser.roles});
     } catch (error) {
         return res.status(500).json({message: 'Failed to create user'})
@@ -41,9 +40,14 @@ export const signIn = async (req: Request, res: Response) => {
 
         console.log('User logged', user.email);
 
-        res.cookie('jwt', token);
+        res.cookie('jwt', token, {secure: true, expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000, sameSite: "strict", path: "/api"});
         return res.status(200).json({_id: user._id, username: user.username, email: user.email, roles: user.roles});
     } catch (error) {
         return res.status(500).json({message: 'Failed to log user'})
     }
+}
+
+export const logout = (req: Request, res: Response) => {
+    res.cookie('jwt', '', {maxAge: 1, path: '/api'});
+    return res.status(200).json({message: "You are now logout!"})
 }

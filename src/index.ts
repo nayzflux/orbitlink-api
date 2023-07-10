@@ -29,15 +29,16 @@ app.set('trust proxy', true);
 
 app.use(rateLimit({
     windowMs: 2 * 60 * 1000, // 2 minutes
-    max: 20, // 20 requêtes maximum pendant la période définie
+    max: 50, // 50 requêtes maximum pendant la période définie
     message: 'Too many request, please re-try in 2 minutes!',
 }));
 app.use(cookieParser());
 app.use(bodyParser.json({limit: '50mb'}));
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(cors({
-    origin: '', // Définir les origines autorisées
+    origin: process.env.CLIENT_URL, // Définir les origines autorisées
     methods: ['GET', 'POST', 'DELETE', 'PATCH'], // Définir les méthodes HTTP autorisées
+    credentials: true
 }));
 app.use(helmet());
 
@@ -60,12 +61,14 @@ app.get('/:query', resolveLink, async (req: Request, res: Response) => {
     const {link} = res.locals;
 
     // Instant response
-    res.status(301).redirect(link.longUrl);
+    res.status(301).redirect(link.destinationURL);
+
+    console.log("ok")
 
     const ip = req.header('x-forwarded-for') || req.socket.remoteAddress || '';
     const {country, city} = await lookup(ip.toString());
     const {os, browser, device } = extractUserAgentInfo(req.header('User-Agent') || '')
-    LinkModel.findByIdAndUpdate(link._id, { $push: {'statistics.clicks': {country, city, os, device, browser}}, 'statistics.clickNumber': (parseInt(link.statistics.clickNumber) + 1)})
+    await LinkModel.findByIdAndUpdate(link._id, { $push: {'statistics.clicks': {country, city, os, device, browser, createdAt: Date.now()}}, 'statistics.clickNumber': (parseInt(link.statistics.clickNumber) + 1)})
 })
 
 app.listen(PORT, () => console.log('Server is listening on port : ' + PORT));

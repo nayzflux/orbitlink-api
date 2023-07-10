@@ -1,17 +1,20 @@
 import {Request, Response} from "express";
 import {CreateLinkData} from "../schemas/linkSchema";
 import LinkModel from "../models/linkModel";
+import {generateRandomURL} from "../utils/utils";
 
 export const createLink = async (req: Request, res: Response) => {
-    const {longUrl, customPath}: CreateLinkData = req.body;
+    const { destinationURL, releaseDateEnabled, expirationDateEnabled, passwordProtectionEnabled, password, expirationDate, releaseDate}: CreateLinkData = req.body;
+    const randomURL = generateRandomURL();
+    const shortURL = req.body.shortURL || randomURL;
     const {self} = res.locals;
 
-    if (customPath) {
-        if (await LinkModel.exists({customPath})) return res.status(400).json({message: 'This custom path is already used, choose another one'});
+    if (shortURL) {
+        if (await LinkModel.exists({shortURL})) return res.status(400).json({message: 'This short URL is already used, choose another one'});
     }
 
     try {
-        const newLink = await LinkModel.create({longUrl, customPath, userId: self._id});
+        const newLink = await LinkModel.create({shortURL, destinationURL, userId: self._id, releaseDateEnabled, expirationDateEnabled, passwordProtectionEnabled, password, expirationDate, releaseDate});
 
         console.log('Link created', newLink);
 
@@ -22,7 +25,57 @@ export const createLink = async (req: Request, res: Response) => {
     }
 }
 
+export const updateLink = async (req: Request, res: Response) => {
+    const data: CreateLinkData = req.body;
+    const { link} = res.locals;
+
+    // Si le ShortURL a changé
+    if (data.shortURL !== link.shortURL) {
+        if (await LinkModel.exists({shortURL: data.shortURL})) return res.status(400).json({message: 'This short URL is already used, choose another one'});
+    }
+
+    try {
+        const updatedLink = await LinkModel.findOneAndUpdate({_id: link._id}, data, {multi: true, upsert: true, new: true});
+
+        console.log('Link updated', updatedLink);
+
+        return res.status(200).json(updatedLink);
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({message: 'Failed to update link'})
+    }
+}
+
+
+
+export const findAllLinks = async (req: Request, res: Response) => {
+    const {self} = res.locals;
+
+    try {
+        const links = await LinkModel.find({userId: self._id});
+        return res.status(200).json(links);
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({message: 'Failed to get all links'})
+    }
+}
+
 export const findLink = async (req: Request, res: Response) => {
     const {link} = res.locals;
     return res.status(200).json(link)
+}
+
+export const deleteLink = async (req: Request, res: Response) => {
+    const { link} = res.locals;
+
+    try {
+        const removedLink = await LinkModel.findOneAndRemove({_id: link._id});
+
+        console.log('Link deleted', removedLink);
+
+        return res.status(200).json(removedLink);
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({message: 'Failed to delete link'})
+    }
 }
