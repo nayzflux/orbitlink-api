@@ -1,3 +1,5 @@
+import * as fs from "fs";
+
 export const validateSafeInput = (input: any) => {
     if (input === "") return true;
 
@@ -27,4 +29,21 @@ export const generateRandomURL = () => {
     }
 
     return resultat;
+}
+
+export const loadJsonArrayFromFile = (filePath: string) => {
+    const content = fs.readFileSync(filePath, 'utf-8');
+    const jsonArray = content.split('\n');
+
+    return jsonArray;
+}
+
+export function formatNumber(number: number) {
+    if (number < 1000) {
+        return number.toString();
+    } else if (number < 1000000) {
+        return (number / 1000).toFixed(1) + "k";
+    } else {
+        return (number / 1000000).toFixed(1) + "m";
+    }
 }

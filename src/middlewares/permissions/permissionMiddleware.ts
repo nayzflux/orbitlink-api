@@ -69,7 +69,8 @@ export const canUpdateUserPassword = (req: Request, res: Response, next: NextFun
  * LINK PERMISSIONS
  */
 
-export const canReadLink = (req: Request, res: Response, next: NextFunction) => {
+// Admin ou Owner
+export const isLinkOwnerOrAdmin = (req: Request, res: Response, next: NextFunction) => {
     const {self, link} = res.locals;
 
     // Si c'est son lien

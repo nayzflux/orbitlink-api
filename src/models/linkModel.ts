@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import * as bcrypt from 'bcrypt';
 
 const linkSchema = new mongoose.Schema({
     userId: {
@@ -53,6 +54,7 @@ const linkSchema = new mongoose.Schema({
         },
         clicks: [
             {
+                referer: String,
                 country: String,
                 city: String,
                 os: String,
@@ -64,6 +66,29 @@ const linkSchema = new mongoose.Schema({
         ]
     }
 });
+
+// Middleware de pré-enregistrement
+linkSchema.pre('save', async function (next) {
+    if (this.isModified('password')) {
+        try {
+            this.password = await bcrypt.hash(this.password, process.env.SALT_OR_ROUNDS || 10);
+        } catch (error: any) {
+            return next(error);
+        }
+    }
+
+    next();
+});
+
+// Méthode de comparaison des mots de passe
+linkSchema.methods.comparePassword = async function (plainPassword: string) {
+    try {
+        return await bcrypt.compare(plainPassword, this.password);
+    } catch (error) {
+        console.error('Erreur lors de la comparaison des mots de passe', error);
+        return false;
+    }
+};
 
 const LinkModel = mongoose.model('Link', linkSchema, 'links');
 

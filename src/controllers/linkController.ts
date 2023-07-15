@@ -2,6 +2,7 @@ import {Request, Response} from "express";
 import {CreateLinkData} from "../schemas/linkSchema";
 import LinkModel from "../models/linkModel";
 import {generateRandomURL} from "../utils/utils";
+import * as bcrypt from "bcrypt";
 
 export const createLink = async (req: Request, res: Response) => {
     const { destinationURL, releaseDateEnabled, expirationDateEnabled, passwordProtectionEnabled, password, expirationDate, releaseDate}: CreateLinkData = req.body;
@@ -33,6 +34,15 @@ export const updateLink = async (req: Request, res: Response) => {
     if (data.shortURL !== link.shortURL) {
         if (await LinkModel.exists({shortURL: data.shortURL})) return res.status(400).json({message: 'This short URL is already used, choose another one'});
     }
+
+    // Si le mot de passe est présent et qu'il est different alors le hashé
+    // Sinon on garde la hash présnet
+    if (data.password && (!await link.comparePassword(data.password))) {
+        data.password = await bcrypt.hash(data.password, process.env.SALT_OR_ROUNDS || 10);
+    } else {
+        data.password = link.password;
+    }
+
 
     try {
         const updatedLink = await LinkModel.findOneAndUpdate({_id: link._id}, data, {multi: true, upsert: true, new: true});
